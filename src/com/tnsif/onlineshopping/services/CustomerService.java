@@ -1,29 +1,31 @@
 package com.tnsif.onlineshopping.services;
+import com.tnsif.onlineshopping.entities.Customer;
 import java.util.ArrayList;
 import java.util.List;
-import com.tns.onlineshopping.entities.Customer;
+import java.util.Collections;
+
+
+
+/**
+ * CustomerService manages customers.
+ */
 public class CustomerService {
-	    private List<Customer> customerList;
+    private List<Customer> customers = new ArrayList<>();
 
-	    public CustomerService() {
-	        customerList = new ArrayList<>();
-	    }
+    public void addCustomer(Customer c) {
+        if (c == null) return;
+        if (findById(c.getUserId()) != null) return; // prevent duplicate id
+        customers.add(c);
+    }
 
-	    public void addCustomer(Customer customer) {
-	        customerList.add(customer);
-	    }
+    public Customer findById(int id) {
+        for (Customer c : customers) {
+            if (c.getUserId() == id) return c;
+        }
+        return null;
+    }
 
-	    // Retrieve customer by ID
-	    public Customer getCustomer(int userId) {
-	        return customerList.stream()
-	                .filter(customer -> customer.getUserId() == userId)
-	                .findFirst()
-	                .orElse(null);
-	    }
-
-	    public List<Customer> getCustomers() {
-	        return customerList;
-	    }
-	}
-
-
+    public List<Customer> getAllCustomers() {
+        return Collections.unmodifiableList(customers);
+    }
+}

@@ -1,153 +1,225 @@
-package com.tnsif.OnlineShopping.application;
-
+package com.tnsif.onlineshopping.application;
+import com.tnsif.onlineshopping.services.*;
+import com.tnsif.onlineshopping.entities.*;
 import java.util.Scanner;
-import com.tnsif.OnlineShopping.entities.Product;
-import com.tnsif.OnlineShopping.services.ProductService;
-import com.tnsif.OnlineShopping.services.CustomerService;
-import com.tnsif.OnlineShopping.services.OrderService;
-import com.tnsif.OnlineShopping.services.AdminService;
 
+/**
+ * Menu-driven driver class for Admin and Customer modules.
+ * Matches the flows shown in the case study PDF.
+ */
 public class OnlineShopping {
-
-    private static ProductService productService = new ProductService();
-    private static CustomerService customerService = new CustomerService();
-    private static OrderService orderService = new OrderService();
-    private static AdminService adminService = new AdminService();
+    private static final ProductService productService = new ProductService();
+    private static final AdminService adminService = new AdminService();
+    private static final CustomerService customerService = new CustomerService();
+    private static final OrderService orderService = new OrderService();
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        seedSampleData();
+        Scanner sc = new Scanner(System.in);
 
-        while (true) {
-            System.out.println("\n=== Online Shopping System ===");
-            System.out.println("1. Admin Menu");
-            System.out.println("2. Customer Menu");
-            System.out.println("3. Exit");
+        boolean running = true;
+        while (running) {
+            System.out.println("\n1. Admin Menu\n2. Customer Menu\n3. Exit\n");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-
-            switch (choice) {
+            int mainChoice = readInt(sc);
+            switch (mainChoice) {
                 case 1:
-                    adminMenu(scanner);
+                    adminMenu(sc);
                     break;
-
                 case 2:
-                    customerMenu(scanner);
+                    customerMenu(sc);
                     break;
-
                 case 3:
-                    System.out.println("Exiting... Thank you!");
-                    scanner.close();
-                    System.exit(0);
+                    running = false;
+                    System.out.println("Exiting...");
                     break;
-
                 default:
-                    System.out.println("Invalid choice! Please try again.");
+                    System.out.println("Invalid option");
+            }
+        }
+        sc.close();
+    }
+
+    private static void seedSampleData() {
+        productService.addProduct(new Product(101, "T-Shirt", 560.0, 100));
+        productService.addProduct(new Product(102, "Trouser", 1400.0, 50));
+    }
+
+    private static void adminMenu(Scanner sc) {
+        boolean back = false;
+        while (!back) {
+            System.out.println("\nAdmin Menu:\n1. Add Product\n2. Remove Product\n3. View Products\n4. Create Admin\n5. View Admins\n6. Update Order Status\n7. View Orders\n8. Return");
+            System.out.print("Choose an option: ");
+            int ch = readInt(sc);
+            switch (ch) {
+                case 1:
+                    System.out.print("Enter Product ID: ");
+                    int pid = readInt(sc);
+                    System.out.print("Enter Product Name: ");
+                    String name = sc.nextLine();
+                    System.out.print("Enter Product Price: ");
+                    double price = readDouble(sc);
+                    System.out.print("Enter Stock Quantity: ");
+                    int qty = readInt(sc);
+                    productService.addProduct(new Product(pid, name, price, qty));
+                    System.out.println("Product added successfully!");
+                    break;
+                case 2:
+                    System.out.print("Enter Product ID to remove: ");
+                    int rid = readInt(sc);
+                    if (productService.removeProduct(rid)) System.out.println("Product removed.");
+                    else System.out.println("Product not found.");
+                    break;
+                case 3:
+                    System.out.println("Products:\n");
+                    for (Product p : productService.getAllProducts()) System.out.println(p);
+                    break;
+                case 4:
+                    System.out.print("Enter Admin ID: ");
+                    int aid = readInt(sc);
+                    System.out.print("Enter Admin Username: ");
+                    String aname = sc.nextLine();
+                    System.out.print("Enter Admin Email: ");
+                    String aemail = sc.nextLine();
+                    adminService.addAdmin(new Admin(aid, aname, aemail));
+                    System.out.println("Admin created successfully!");
+                    break;
+                case 5:
+                    System.out.println("Admins:");
+                    for (Admin a : adminService.getAdmins()) System.out.println(a);
+                    break;
+                case 6:
+                    System.out.print("Enter Order ID: ");
+                    int oid = readInt(sc);
+                    Order o = orderService.findById(oid);
+                    if (o == null) {
+                        System.out.println("Order not found.");
+                        break;
+                    }
+                    System.out.print("Enter new status (Completed/Delivered/Cancelled): ");
+                    String st = sc.nextLine();
+                    o.setStatus(st);
+                    System.out.println("Order updated.");
+                    break;
+                case 7:
+                    System.out.println("Orders:\n");
+                    for (Order order : orderService.getAllOrders()) System.out.println(order);
+                    break;
+                case 8:
+                    back = true;
+                    System.out.println("Exiting Admin...");
+                    break;
+                default:
+                    System.out.println("Invalid option");
             }
         }
     }
 
-    // ================== ADMIN MENU ==================
-    private static void adminMenu(Scanner scanner) {
-        int adminChoice;
-        do {
-            System.out.println("\n--- Admin Menu ---");
-            System.out.println("1. Add Product");
-            System.out.println("2. Remove Product");
-            System.out.println("3. View Products");
-            System.out.println("4. Create Admin");
-            System.out.println("5. View Admins");
-            System.out.println("6. Update Order Status");
-            System.out.println("7. View Orders");
-            System.out.println("8. Return");
+    private static void customerMenu(Scanner sc) {
+        boolean back = false;
+        while (!back) {
+            System.out.println("\nCustomer Menu:\n1. Create Customer\n2. View Customers\n3. Place Order\n4. View Orders\n5. View Products\n6. Return");
             System.out.print("Choose an option: ");
-            adminChoice = scanner.nextInt();
+            int ch = readInt(sc);
+            switch (ch) {
+                case 1:
+                    System.out.print("Enter User ID: ");
+                    int uid = readInt(sc);
+                    System.out.print("Enter Username: ");
+                    String uname = sc.nextLine();
+                    System.out.print("Enter Email: ");
+                    String uemail = sc.nextLine();
+                    System.out.print("Enter Address: ");
+                    String addr = sc.nextLine();
+                    customerService.addCustomer(new Customer(uid, uname, uemail, addr));
+                    System.out.println("Customer created successfully!");
+                    break;
+                case 2:
+                    System.out.println("Customers:\n");
+                    for (Customer c : customerService.getAllCustomers()) System.out.println(c);
+                    break;
+                case 3:
+                    System.out.print("Enter Customer ID: ");
+                    int cid = readInt(sc);
+                    Customer cust = customerService.findById(cid);
+                    if (cust == null) {
+                        System.out.println("Customer not found.");
+                        break;
+                    }
 
-            switch (adminChoice) {
-                case 1 -> addProduct(scanner);
-                case 2 -> removeProduct(scanner);
-                case 3 -> viewProducts();
-                case 4 -> createAdmin(scanner);
-                case 5 -> viewAdmins();
-                case 6 -> updateOrderStatus(scanner);
-                case 7 -> viewOrders();
-                case 8 -> System.out.println("Exiting Admin Menu...");
-                default -> System.out.println("Invalid choice! Please try again.");
+                    Order order = new Order(cust);
+                    while (true) {
+                        System.out.print("Enter Product ID to add to order (or -1 to complete): ");
+                        int pid = readInt(sc);
+                        if (pid == -1) break;
+                        Product p = productService.findById(pid);
+                        if (p == null) {
+                            System.out.println("Product not found.");
+                            continue;
+                        }
+                        System.out.print("Enter quantity: ");
+                        int q = readInt(sc);
+                        if (q <= 0) {
+                            System.out.println("Invalid qty");
+                            continue;
+                        }
+                        if (p.getStockQuantity() < q) {
+                            System.out.println("Not enough stock. Available: " + p.getStockQuantity());
+                            continue;
+                        }
+                        // reduce stock and add to order
+                        p.reduceStock(q);
+                        order.addProduct(p, q);
+                    }
+                    orderService.addOrder(order);
+                    cust.addOrder(order);
+                    System.out.println("Order placed successfully!");
+                    break;
+                case 4:
+                    System.out.print("Enter Customer ID: ");
+                    int ccid = readInt(sc);
+                    Customer customer = customerService.findById(ccid);
+                    if (customer == null) {
+                        System.out.println("Customer not found.");
+                        break;
+                    }
+                    System.out.println("Orders:\n");
+                    for (Order o : customer.getOrders()) System.out.println(o);
+                    break;
+                case 5:
+                    System.out.println("Products:\n");
+                    for (Product p : productService.getAllProducts()) System.out.println(p);
+                    break;
+                case 6:
+                    back = true;
+                    System.out.println("Exiting Customer Menu...");
+                    break;
+                default:
+                    System.out.println("Invalid option");
             }
-        } while (adminChoice != 8);
+        }
     }
 
-    // ================== CUSTOMER MENU ==================
-    private static void customerMenu(Scanner scanner) {
-        int customerChoice;
-        do {
-            System.out.println("\n--- Customer Menu ---");
-            System.out.println("1. Create Customer");
-            System.out.println("2. View Customers");
-            System.out.println("3. Place Order");
-            System.out.println("4. View Orders");
-            System.out.println("5. View Products");
-            System.out.println("6. Return");
-            System.out.print("Choose an option: ");
-            customerChoice = scanner.nextInt();
-
-            switch (customerChoice) {
-                case 1 -> createCustomer(scanner);
-                case 2 -> viewCustomers();
-                case 3 -> placeOrder(scanner);
-                case 4 -> viewOrders();
-                case 5 -> viewProducts();
-                case 6 -> System.out.println("Exiting Customer Menu...");
-                default -> System.out.println("Invalid choice! Please try again.");
+    // utility methods to read ints and doubles robustly
+    private static int readInt(Scanner sc) {
+        while (true) {
+            String line = sc.nextLine().trim();
+            try {
+                return Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.print("Invalid integer. Please enter again: ");
             }
-        } while (customerChoice != 6);
+        }
     }
 
-    // ================== ADMIN METHODS ==================
-    private static void addProduct(Scanner scanner) {
-        System.out.print("Enter Product ID: ");
-        int productId = scanner.nextInt();
-        System.out.print("Enter Product Name: ");
-        String name = scanner.next();
-        System.out.print("Enter Product Price: ");
-        double price = scanner.nextDouble();
-        System.out.print("Enter Stock Quantity: ");
-        int stockQuantity = scanner.nextInt();
-
-        Product product = new Product(productId, name, price, stockQuantity);
-        productService.addProduct(product);
-        System.out.println("Product added successfully!");
+    private static double readDouble(Scanner sc) {
+        while (true) {
+            String line = sc.nextLine().trim();
+            try {
+                return Double.parseDouble(line);
+            } catch (NumberFormatException e) {
+                System.out.print("Invalid number. Please enter again: ");
+            }
+        }
     }
-
-    private static void removeProduct(Scanner scanner) {
-        System.out.print("Enter Product ID: ");
-        int productId = scanner.nextInt();
-        productService.removeProduct(productId);
-        System.out.println("Product removed successfully!");
-    }
-
-    private static void viewProducts() {
-        productService.viewProducts();
-    }
-
-    private static void createAdmin(Scanner scanner) {
-        adminService.createAdmin(scanner);
-    }
-
-    private static void viewAdmins() {
-        adminService.viewAdmins();
-    }
-
-    private static void updateOrderStatus(Scanner scanner) {
-        adminService.updateOrderStatus(scanner, orderService);
-    }
-
-    private static void viewOrders() {
-        orderService.getOrders().forEach(order ->
-            System.out.println("Order ID: " + order.getOrderId() + ", Status: " + order.getStatus())
-        );
-    }
-
-    // ================== CUSTOMER METHODS ==================
-    private static void createCustomer(Scanner scanner) {
-        customerService.createCustomer(scanner);
-    }
+}

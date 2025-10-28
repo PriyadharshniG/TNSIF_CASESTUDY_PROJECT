@@ -1,32 +1,45 @@
 package com.tnsif.onlineshopping.services;
-
+import model.Product;
 import java.util.ArrayList;
 import java.util.List;
 import com.tnsif.onlineshopping.entities.Product;
+import java.util.Collections;
 
+/**
+ * ProductService manages product catalog in memory.
+ */
 public class ProductService {
-    private List<Product> productList;
+    private List<Product> products = new ArrayList<>();
 
     public ProductService() {
-        productList = new ArrayList<>();
     }
 
     public void addProduct(Product product) {
-        productList.add(product);
+        if (product == null) return;
+        // Prevent duplicate productId
+        if (findById(product.getProductId()) != null) {
+            // update existing product instead of adding duplicate
+            Product existing = findById(product.getProductId());
+            existing.setName(product.getName());
+            existing.setPrice(product.getPrice());
+            existing.setStockQuantity(product.getStockQuantity());
+        } else {
+            products.add(product);
+        }
     }
 
-    public void removeProduct(int productId) {
-        productList.removeIf(product -> product.getProductId() == productId);
+    public boolean removeProduct(int productId) {
+        return products.removeIf(p -> p.getProductId() == productId);
     }
 
-    public List<Product> getProducts() {
-        return productList;
+    public Product findById(int id) {
+        for (Product p : products) {
+            if (p.getProductId() == id) return p;
+        }
+        return null;
     }
 
-    public Product getProductById(int productId) {
-        return productList.stream()
-                .filter(product -> product.getProductId() == productId)
-                .findFirst()
-                .orElse(null);
+    public List<Product> getAllProducts() {
+        return Collections.unmodifiableList(products);
     }
 }

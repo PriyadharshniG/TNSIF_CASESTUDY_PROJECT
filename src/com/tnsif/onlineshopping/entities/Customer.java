@@ -3,6 +3,10 @@ package com.tnsif.onlineshopping.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Customer extends User and holds address, shoppingCart and orders list.
+ */
 public class Customer extends User {
     private String address;
     private ShoppingCart shoppingCart;
@@ -10,18 +14,17 @@ public class Customer extends User {
 
     public Customer(int userId, String username, String email, String address) {
         super(userId, username, email);
-        this.address = address;
-        this.shoppingCart = new ShoppingCart();
+        this.address = address != null ? address : "";
+        this.shoppingCart = new ShoppingCart(this);
         this.orders = new ArrayList<>();
     }
 
-    // Getters and Setters
     public String getAddress() {
         return address;
     }
 
     public void setAddress(String address) {
-        this.address = address;
+        this.address = address != null ? address : "";
     }
 
     public ShoppingCart getShoppingCart() {
@@ -33,6 +36,11 @@ public class Customer extends User {
     }
 
     public void addOrder(Order order) {
-        orders.add(order);
+        if (order != null) this.orders.add(order);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", Address: " + address;
     }
 }

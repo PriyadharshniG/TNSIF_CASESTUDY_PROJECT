@@ -1,63 +1,40 @@
 package com.tnsif.onlineshopping.services;
-import java.util.ArrayList;
-import java.util.List;
-import com.tnsif.onlineshopping.entities.Order;
-import com.tnsif.onlineshopping.entities.Product;
-import com.tnsif.onlineshopping.entities.ProductQuantityPair;
+
+import java.util.*;
+import com.tnsif.onlineshopping.entities.*;
 
 public class OrderService {
+    private final List<Order> orders = new ArrayList<>();
 
-    private List<Order> orderList;
-
-    public OrderService() {
-        orderList = new ArrayList<>();
-    }
-
-    public void placeOrder(Order order) {
-        orderList.add(order);
-    }
-
-    public void updateOrderStatus(int orderId, String status) {
-        Order order = getOrder(orderId);
-        if (order == null) {
-            System.out.println("Invalid Order");
-            return;
+    // Add order to the system
+    public void addOrder(Order order) {
+        if (order != null) {
+            orders.add(order);
         }
+    }
 
-        if ("Completed".equalsIgnoreCase(status) && "Pending".equalsIgnoreCase(order.getStatus())) {
-            for (ProductQuantityPair pair : order.getProducts()) {
-                Product product = pair.getProduct();
-                int quantity = pair.getQuantity();
-                if (product.getStockQuantity() >= quantity) {
-                    product.setStockQuantity(product.getStockQuantity() - quantity);
-                } else {
-                    System.out.println("Insufficient stock for product: " + product.getName());
-                    return;
-                }
+    // Find an order by its ID
+    public Order findById(int id) {
+        for (Order o : orders) {
+            if (o.getOrderId() == id) {
+                return o;
             }
-        } else if ("Cancelled".equalsIgnoreCase(status)) {
-            if ("Completed".equalsIgnoreCase(order.getStatus()) || "Pending".equalsIgnoreCase(order.getStatus())) {
-                for (ProductQuantityPair pair : order.getProducts()) {
-                    Product product = pair.getProduct();
-                    int quantity = pair.getQuantity();
-                    product.setStockQuantity(product.getStockQuantity() + quantity);
-                }
-            }
-        } else if ("Delivered".equalsIgnoreCase(status) && "Completed".equalsIgnoreCase(order.getStatus())) {
-            // Only update the status to Delivered, no stock adjustment needed
         }
-
-        order.setStatus(status);
+        return null;
     }
 
-    public Order getOrder(int orderId) {
-        return orderList.stream()
-                .filter(order -> order.getOrderId() == orderId)
-                .findFirst()
-                .orElse(null);
+    // Update order status (Completed / Delivered / Cancelled)
+    public boolean updateOrderStatus(int id, String newStatus) {
+        Order order = findById(id);
+        if (order != null) {
+            order.setStatus(newStatus);
+            return true;
+        }
+        return false;
     }
 
-    public List<Order> getOrders() {
-        return orderList;
+    // Retrieve all orders (read-only)
+    public List<Order> getAllOrders() {
+        return Collections.unmodifiableList(orders);
     }
 }

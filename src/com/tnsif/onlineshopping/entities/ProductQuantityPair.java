@@ -1,15 +1,17 @@
 package com.tnsif.onlineshopping.entities;
 
+/**
+ * Simple holder for product and its ordered quantity inside an Order.
+ */
 public class ProductQuantityPair {
     private Product product;
     private int quantity;
 
     public ProductQuantityPair(Product product, int quantity) {
         this.product = product;
-        this.quantity = quantity;
+        this.quantity = Math.max(0, quantity);
     }
 
-    // Getters and Setters
     public Product getProduct() {
         return product;
     }
@@ -23,11 +25,11 @@ public class ProductQuantityPair {
     }
 
     public void setQuantity(int quantity) {
-        this.quantity = quantity;
+        this.quantity = Math.max(0, quantity);
     }
 
     @Override
     public String toString() {
-        return "ProductQuantityPair [product=" + product + ", quantity=" + quantity + "]";
+        return "  Product: " + (product != null ? product.getName() : "null") + ", Quantity: " + quantity;
     }
 }
