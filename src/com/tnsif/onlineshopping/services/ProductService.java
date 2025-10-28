@@ -1,5 +1,5 @@
 package com.tnsif.onlineshopping.services;
-import model.Product;
+
 import java.util.ArrayList;
 import java.util.List;
 import com.tnsif.onlineshopping.entities.Product;
